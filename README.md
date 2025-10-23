@@ -31,6 +31,8 @@ This caches the decrypted server ip and port into a file ds2onlinefix.cache and 
 
 You need to connect once for cache to be made
 
+Cache file stays in the game folder for anytime u launch u dont have to successfully connect first every launch
+
 I havent tested for bans
 
 Compiling debug build could have a higher chance of a ban as it opens a console for logging
