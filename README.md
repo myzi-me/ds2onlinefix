@@ -3,13 +3,15 @@ Experimental workaround for dark souls 2 login error
 
 Needs testing
 
-# How to use
+# How to compile
 
 Needs cmake and visual studio 2022
 
 Run GenerateVSProject.bat then open sln in out folder
 
 Compile as release
+
+# How to use
 
 Drag xinput1_3.dll into game folder
 
