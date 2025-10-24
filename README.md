@@ -3,6 +3,9 @@ Experimental workaround for dark souls 2 login error
 
 Needs testing
 
+I got a chance to test it seems to be working
+https://www.youtube.com/watch?v=xp_bbVdFU2I
+
 # How to compile
 
 Needs cmake and visual studio 2022
