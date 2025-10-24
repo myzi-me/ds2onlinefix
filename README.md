@@ -13,6 +13,8 @@ Compile as release
 
 Drag xinput1_3.dll into game folder
 
+You need to successfully connect once first then needed data will be cached to ds2onlinefix.cache file forever
+
 # The problem
 
 The problem with ds2 servers is it sometimes null the redirect server ip and port from one of the initial packets
