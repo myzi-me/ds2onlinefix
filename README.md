@@ -6,6 +6,14 @@ Needs testing
 I got a chance to test it seems to be working
 https://www.youtube.com/watch?v=xp_bbVdFU2I
 
+# How to use
+
+Download test release build from releases
+
+Drag xinput1_3.dll into game folder
+
+You need to successfully connect once first then needed data will be cached to ds2onlinefix.cache file forever
+
 # How to compile
 
 Needs cmake and visual studio 2022
@@ -13,12 +21,6 @@ Needs cmake and visual studio 2022
 Run GenerateVSProject.bat then open sln in out folder
 
 Compile as release
-
-# How to use
-
-Drag xinput1_3.dll into game folder
-
-You need to successfully connect once first then needed data will be cached to ds2onlinefix.cache file forever
 
 # The problem
 
@@ -44,3 +46,5 @@ I havent tested for bans
 
 Compiling debug build could have a higher chance of a ban as it opens a console for logging
 
+# Libraries used
+https://github.com/TsudaKageyu/minhook
