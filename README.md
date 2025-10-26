@@ -6,6 +6,8 @@ Needs testing
 I got a chance to test it seems to be working
 https://www.youtube.com/watch?v=xp_bbVdFU2I
 
+26/10/2025 - Login server has been fully offline for a day, fix wont work when this happens, maybe its for maintenence for a fix, or it died, no maintenence tweet
+
 # How to use
 
 Download test release build from releases
