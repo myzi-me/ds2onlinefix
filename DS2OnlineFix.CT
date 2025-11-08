@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>0</ID>
+      <Description>"DS2 Online Fix"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>// ds2 online fix script by myzi
+
+[ENABLE]
+define(DecryptLoginData,"DarkSoulsII.exe"+0x6CA640)
+define(DecryptLoginDataCall,"DarkSoulsII.exe"+0x6CC704)
+
+label(hkDecryptLoginDataCall)
+
+alloc(OnlineFixData,$1000,"DarkSoulsII.exe")
+
+
+OnlineFixData:
+
+align #16
+LoginServerIp:
+db 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+align #16
+LoginServerPort:
+db 50 C3 // 50000
+
+
+// cx = uint16, returns reversed endian
+align #16
+SwapEndian:
+ror cx, 0x8
+mov ax, cx
+ret
+
+
+align #16
+NullLoginServerIp:
+xorps xmm0, xmm0
+movups [LoginServerIp], xmm0
+ret
+
+
+// rcx = ip in on wire format, returns ip string
+align #16
+IpStringFromOnWireFormat:
+sub rsp, 0x8
+call NullLoginServerIp
+mov rdx, rcx
+mov ecx, 0x2
+lea r8, [LoginServerIp]
+mov r9, 0x10
+add rsp, 0x8
+jmp inet_ntop
+
+
+// rcx = decrypted login data, rdx = login ip
+align #16
+FixUserLoginData:
+push r12
+sub rsp, 0x8
+mov r12, rcx
+mov cx, [LoginServerPort]
+call SwapEndian
+mov r10w, ax
+lea rax, [r12+0x88] // 136 is port offset
+mov [rax], r10w
+lea rcx, [r12+0x8] // 8 is ip offset
+mov r8, 0x10
+add rsp, 0x8
+pop r12
+jmp strncpy
+
+
+// rcx = LoginTaskForNP, rdx = enc data, r8 = encrypted data size, r9 = out decrypted data vector
+align #16
+hkDecryptLoginDataCall:
+push r12
+push r13
+push r14
+push r15
+sub rsp, 0x8
+mov r12, r8
+sub r12, 0x1B // -27 for decrypted size
+mov r13, r9
+mov r14, rcx
+call DecryptLoginData
+mov r15b, al // return value
+
+test al, al
+je LoginFailed // DecryptLoginData returned 0
+
+test r12, 0xB8 // size should be 184
+je LoginFailed // wrong data
+
+mov r13, [r13]
+test r13, r13
+je LoginFailed // no decrypted data
+
+mov al, [r13+0x8]
+test al, al
+jne LoginFailed // ip already set
+
+mov r10, r14
+add r10, 0x1A0 // login task ip offset
+mov r11d, [r10]
+test r11d, r11d
+je LoginFailed // no login ip
+
+mov rcx, r10
+call IpStringFromOnWireFormat
+test rax, rax
+je LoginFailed // failed to convert ip
+
+mov rcx, r13
+mov rdx, rax
+call FixUserLoginData
+
+LoginFailed:
+mov al, r15b
+add rsp, 0x8
+pop r15
+pop r14
+pop r13
+pop r12
+ret
+
+
+DecryptLoginDataCall:
+call hkDecryptLoginDataCall
+
+[DISABLE]
+DecryptLoginDataCall: // restore hook
+	db E8 37 DF FF FF
+
+dealloc(OnlineFixData)
+unregistersymbol(OnlineFixData)
+unregistersymbol(hkDecryptLoginDataCall)
+unregistersymbol(DecryptLoginDataCall)
+unregistersymbol(DecryptLoginData)
+
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>

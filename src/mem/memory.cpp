@@ -17,3 +17,7 @@ bool write_protected_buffer(void* dst, void* src, size_t size) {
 	RUNTIME_ERROR("Failed to write protected buffer");
 	return false;
 }
+
+uint16_t swap_endian(uint16_t x) {
+	return (x << 8) | (x >> 8);
+}

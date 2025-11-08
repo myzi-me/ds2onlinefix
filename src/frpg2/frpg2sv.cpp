@@ -4,11 +4,21 @@
 #include "mem/memory.h"
 #include "frpg2/frpg2sv_cache.h"
 
+#if (!USE_IP_CACHE)
+#include <ws2tcpip.h>
+#pragma comment(lib, "Ws2_32.lib")
+#endif
+
 // enc will be +27
 #define DECRYPTED_USER_LOGIN_SIZE 184
 
 #define DECRYPT_LOGIN_DATA_FUNC 0x6CA640
 #define USER_LOGIN_DECRYPT_CALL 0x6CC704
+
+#define LOGIN_TASK_IP_OFFSET 0x1A0
+
+// needs converting to big endian
+#define GAME_SERVER_PORT 50000 
 
 // its a DLVector
 struct LoginDecryptionResult {
@@ -58,6 +68,7 @@ bool decrypt_login_data_hook(void* login_task, void* enc_data, uint64_t enc_data
 
     uint64_t dec_data_size = enc_data_size - 27;
 
+#if USE_IP_CACHE
     if (dec_data_size == DECRYPTED_USER_LOGIN_SIZE) { // should always be as call hooked user login call
         Frpg2UserLoginResponse* user_login = reinterpret_cast<Frpg2UserLoginResponse*>(out_dec_data->start);
         if (user_login->redirect_ip[0] == 0x00) {
@@ -69,6 +80,30 @@ bool decrypt_login_data_hook(void* login_task, void* enc_data, uint64_t enc_data
         DEBUG_LOG("Caching user login data");
         cache_user_login(user_login);
     }
+#else
+    if (dec_data_size == DECRYPTED_USER_LOGIN_SIZE) {
+        Frpg2UserLoginResponse* user_login = reinterpret_cast<Frpg2UserLoginResponse*>(out_dec_data->start);
+        if (user_login->redirect_ip[0] == 0x00) {
+            char login_server_ip[16]; // login and game server is the same
+            null_buffer(login_server_ip, sizeof(login_server_ip));
+            IN_ADDR* net_addr = reinterpret_cast<IN_ADDR*>(reinterpret_cast<uintptr_t>(login_task) + LOGIN_TASK_IP_OFFSET);
+            if (net_addr->S_un.S_addr == 0x0) {
+                DEBUG_LOG("Login server ip is null");
+                return result;
+            }
+
+            if (inet_ntop(AF_INET, net_addr, login_server_ip, sizeof(login_server_ip)) == NULL) {
+                DEBUG_LOG("inet_ntop returned null");
+                return result;
+            }
+
+            strncpy(user_login->redirect_ip, login_server_ip, sizeof(user_login->redirect_ip));
+            user_login->redirect_port = swap_endian(GAME_SERVER_PORT);
+            DEBUG_LOG("Using login server ip as redirect ip %s:%hu/%hu", user_login->redirect_ip, GAME_SERVER_PORT, user_login->redirect_port);
+        }
+    }
+#endif
+
 
     return result;
 }
